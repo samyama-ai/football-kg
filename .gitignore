@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Football World Cup datasets
+data/*.csv
+data/*.csv.gz
+data/*.sgsnap
