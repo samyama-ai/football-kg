@@ -1,0 +1,157 @@
+# Football KG — custom MCP tools for samyama-mcp-serve
+#
+# Auto-generated tools handle: search/get/count per label (12),
+# find_connections/traverse per edge type (19), algorithms (3), generic (2).
+# These custom tools add World Cup-specific aggregation queries.
+
+include_node_tools: true
+include_edge_tools: true
+include_vector_tools: true
+include_algorithm_tools: true
+
+custom_tools:
+
+  - name: top_goal_scorers
+    description: "Top goal scorers of all time across World Cup tournaments, excluding own goals. Returns player name, position, and total goals."
+    cypher_template: >
+      MATCH (g:Goal)-[:SCORED_BY]->(p:Player)
+      WHERE g.own_goal = false
+      RETURN p.name AS player, p.position AS position, count(g) AS goals
+      ORDER BY goals DESC LIMIT {limit}
+    parameters:
+      - {name: limit, type: int, default: 20}
+
+  - name: top_tournament_winners
+    description: "Teams with the most World Cup tournament titles. Returns team name and title count."
+    cypher_template: >
+      MATCH (t:Tournament)-[:WON_BY]->(team:Team)
+      RETURN team.name AS team, count(t) AS titles, collect(t.year) AS years
+      ORDER BY titles DESC LIMIT {limit}
+    parameters:
+      - {name: limit, type: int, default: 10}
+
+  - name: highest_scoring_matches
+    description: "Matches with the most combined goals scored. Returns match name, date, stage, and total goals."
+    cypher_template: >
+      MATCH (m:Match)
+      WHERE m.home_score IS NOT NULL AND m.away_score IS NOT NULL
+      RETURN m.name AS match, m.date AS date, m.stage AS stage,
+             m.home_score + m.away_score AS total_goals, m.home_score AS home, m.away_score AS away
+      ORDER BY total_goals DESC LIMIT {limit}
+    parameters:
+      - {name: limit, type: int, default: 10}
+
+  - name: top_host_nations
+    description: "Countries that have hosted the most World Cup tournaments. Returns country, tournament count, and the years hosted."
+    cypher_template: >
+      MATCH (t:Tournament)-[:HOSTED_BY]->(c:Country)
+      RETURN c.name AS host, count(t) AS tournaments_hosted, collect(t.year) AS years
+      ORDER BY tournaments_hosted DESC LIMIT {limit}
+    parameters:
+      - {name: limit, type: int, default: 10}
+
+  - name: teams_by_confederation
+    description: "Team counts grouped by confederation, showing regional football representation."
+    cypher_template: >
+      MATCH (team:Team)
+      RETURN team.confederation AS confederation, count(team) AS teams
+      ORDER BY teams DESC
+    parameters: []
+
+  - name: busiest_stadiums
+    description: "Stadiums that have hosted the most World Cup matches. Returns stadium, city, country, matches hosted, and capacity."
+    cypher_template: >
+      MATCH (m:Match)-[:PLAYED_AT]->(s:Stadium)
+      RETURN s.name AS stadium, s.city AS city, s.country AS country,
+             count(m) AS matches_hosted, s.capacity AS capacity
+      ORDER BY matches_hosted DESC LIMIT {limit}
+    parameters:
+      - {name: limit, type: int, default: 10}
+
+  - name: multi_tournament_veterans
+    description: "Players who appeared in the most World Cup tournaments. Returns player name, position, and tournament count."
+    cypher_template: >
+      MATCH (p:Player)
+      WHERE p.count_tournaments >= {min_tournaments}
+      RETURN p.name AS player, p.position AS position, p.count_tournaments AS tournaments
+      ORDER BY tournaments DESC LIMIT {limit}
+    parameters:
+      - {name: min_tournaments, type: int, default: 3}
+      - {name: limit, type: int, default: 20}
+
+  - name: goals_by_stage
+    description: "Goals scored grouped by match stage (e.g. Group Stage, Final), showing where in the tournament scoring happens most."
+    cypher_template: >
+      MATCH (g:Goal)-[:SCORED_IN]->(m:Match)
+      WHERE g.own_goal = false
+      RETURN m.stage AS stage, count(g) AS goals
+      ORDER BY goals DESC
+    parameters: []
+
+  - name: team_tournament_record
+    description: "A team's match record within a specific tournament — matches played, wins, and goals scored/conceded."
+    cypher_template: >
+      MATCH (m:Match)-[:IN_TOURNAMENT]->(t:Tournament)
+      WHERE t.name CONTAINS "{tournament}"
+      MATCH (m)-[:HOME_TEAM|AWAY_TEAM]->(team:Team)
+      WHERE team.name CONTAINS "{team_name}"
+      RETURN team.name AS team, t.name AS tournament, count(m) AS matches,
+             collect(m.result) AS results
+    parameters:
+      - {name: team_name, type: str}
+      - {name: tournament, type: str}
+
+  - name: head_to_head
+    description: "Head-to-head World Cup match history between two teams."
+    cypher_template: >
+      MATCH (t1:Team)<-[:HOME_TEAM]-(m:Match)-[:AWAY_TEAM]->(t2:Team)
+      WHERE (t1.name CONTAINS "{team1}" AND t2.name CONTAINS "{team2}")
+         OR (t1.name CONTAINS "{team2}" AND t2.name CONTAINS "{team1}")
+      RETURN m.name AS match, m.date AS date, t1.name AS home, t2.name AS away,
+             m.home_score AS home_score, m.away_score AS away_score
+      ORDER BY m.date
+    parameters:
+      - {name: team1, type: str}
+      - {name: team2, type: str}
+
+  - name: managers_by_country
+    description: "World Cup managers from a specific country."
+    cypher_template: >
+      MATCH (mgr:Manager)-[:FROM]->(c:Country)
+      WHERE c.name CONTAINS "{country}"
+      RETURN mgr.name AS manager, c.name AS country
+    parameters:
+      - {name: country, type: str}
+
+  - name: player_goal_log
+    description: "Full goal-scoring log for a specific player across all World Cup matches."
+    cypher_template: >
+      MATCH (p:Player)<-[:SCORED_BY]-(g:Goal)-[:SCORED_IN]->(m:Match)
+      WHERE p.name CONTAINS "{player_name}"
+      RETURN m.name AS match, m.date AS date, g.minute AS minute, g.penalty AS penalty, g.own_goal AS own_goal
+      ORDER BY m.date
+    parameters:
+      - {name: player_name, type: str}
+
+  - name: squad_roster
+    description: "A team's full World Cup squad for a specific tournament, with shirt numbers and positions."
+    cypher_template: >
+      MATCH (p:Player)-[pf:PLAYED_FOR]->(t:Team)
+      WHERE t.name CONTAINS "{team_name}" AND pf.tournament_id = "{tournament_id}"
+      RETURN p.name AS player, pf.position AS position, pf.shirt_number AS shirt_number
+      ORDER BY pf.shirt_number
+    parameters:
+      - {name: team_name, type: str}
+      - {name: tournament_id, type: str}
+
+  - name: group_stage_table
+    description: "Final group-stage standings for a specific tournament and group."
+    cypher_template: >
+      MATCH (t:Team)-[g:IN_GROUP]->(tour:Tournament)
+      WHERE tour.tournament_id = "{tournament_id}" AND g.group_name = "{group_name}"
+      RETURN t.name AS team, g.position AS position, g.played AS played, g.wins AS wins,
+             g.draws AS draws, g.losses AS losses, g.points AS points, g.advanced AS advanced
+      ORDER BY g.position
+    parameters:
+      - {name: tournament_id, type: str}
+      - {name: group_name, type: str}

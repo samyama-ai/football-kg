@@ -1,0 +1,26 @@
+[project]
+name = "football-kg"
+version = "0.1.0"
+description = "Football Knowledge Graph — FIFA World Cup tournaments, teams, players and goals from DataHub datasets in Samyama graph database"
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Madhulatha Mandarapu", email = "madhulatha@samyama.ai"},
+    {name = "Sandeep Kunkunuru", email = "sandeep@samyama.ai"},
+]
+keywords = ["knowledge-graph", "football", "soccer", "world-cup", "graph-database", "samyama"]
+
+dependencies = [
+    "samyama>=0.6.0",
+    "sentence-transformers>=2.2.0",
+    "numpy>=1.24",
+    "rich>=13.0",
+    "click>=8.0",
+    "fastmcp>=0.1.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "ruff>=0.1.0"]
+
+[tool.setuptools.packages.find]
+include = ["etl*", "mcp_server*"]
