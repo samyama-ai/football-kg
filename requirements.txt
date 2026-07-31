@@ -1,0 +1,10 @@
+# Runtime dependencies for the Football Knowledge Graph.
+# Mirrors [project.dependencies] in pyproject.toml — `pip install .` works too.
+# Requires Python >= 3.10 (the samyama SDK).
+# Note: sentence-transformers pulls in torch (~large) for semantic search.
+samyama>=0.6.0
+sentence-transformers>=2.2.0
+numpy>=1.24
+rich>=13.0
+click>=8.0
+fastmcp>=0.1.0

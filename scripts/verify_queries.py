@@ -4,9 +4,7 @@ import sys
 import gc
 sys.path.insert(0, ".")
 from samyama import SamyamaClient
-from etl.loader import load_football
-
-GRAPH = "default"
+from etl.loader import load_football, GRAPH
 
 
 def q(client, cypher):

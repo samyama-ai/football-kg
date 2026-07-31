@@ -64,7 +64,7 @@ import os
 import time
 from samyama import SamyamaClient
 
-GRAPH = "default"
+GRAPH = "football"
 
 NULLS = {"", "not applicable", "not available", "n/a"}
 

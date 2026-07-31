@@ -32,6 +32,18 @@ ORDER BY goals DESC LIMIT 5
 
 ---
 
+## Documentation
+
+New here? Start with the guides:
+
+| Guide | What it covers |
+|-------|----------------|
+| **[GETTING_STARTED.md](GETTING_STARTED.md)** | prerequisites (Python ≥ 3.10) · install · run the engine (Docker) · load the graph · first query |
+| **[docs/QUERYING.md](docs/QUERYING.md)** | ask questions via **MCP (Claude)**, the **HTTP API**, or the **Samyama CLI** |
+| [docs/100-queries.md](docs/100-queries.md) | 100 example Cypher queries |
+
+---
+
 ## Schema
 
 **12 node labels** -- Player (10,401), Manager (475), Referee (493), Goal (3,637), Booking (3,178), Substitution (10,222), PenaltyKick (396), Stadium (240), Team (88), Match (1,248), Country (110), Tournament (30)
@@ -59,33 +71,23 @@ ORDER BY goals DESC LIMIT 5
 
 ## Quick Start
 
-### Load from snapshot (recommended)
+**Full walkthrough → [GETTING_STARTED.md](GETTING_STARTED.md)** (prerequisites, Docker, loading, querying).
+
+Fastest path — run the engine and import the published snapshot into the `football` tenant
+(needs **Python ≥ 3.10** for the tooling and **Docker** for the engine):
 
 ```bash
-# Download (0.4 MB)
-curl -LO https://github.com/samyama-ai/samyama-graph/releases/download/kg-snapshots-v8/football.sgsnap
+pip install -r requirements.txt
+docker run --rm -p 8080:8080 -p 6379:6379 public.ecr.aws/f9f6l5u4/samyama-graph:1.1.0
 
-# Start Samyama and import
-./target/release/samyama
-curl -X POST http://localhost:8080/api/tenants \
-  -H 'Content-Type: application/json' \
-  -d '{"id":"football","name":"Football KG"}'
-curl -X POST http://localhost:8080/api/tenants/football/snapshot/import \
-  -F "file=@football.sgsnap"
+curl -LO https://github.com/samyama-ai/samyama-graph/releases/download/kg-snapshots-v8/football.sgsnap  # ~0.4 MB
+curl -X POST http://localhost:8080/api/tenants -H 'Content-Type: application/json' -d '{"id":"football","name":"Football KG"}'
+curl -X POST http://localhost:8080/api/tenants/football/snapshot/import -F "file=@football.sgsnap"
 ```
 
-### Build from source
-
-```bash
-git clone https://github.com/samyama-ai/football-kg.git && cd football-kg
-pip install -e ".[dev]"
-mkdir -p data   # place tournaments.csv, teams.csv, stadiums.csv, matches.csv, players.csv,
-                # squads.csv, goals.csv, managers.csv (and optionally referees.csv,
-                # bookings.csv, substitutions.csv, penalty_kicks.csv, tournament_standings.csv,
-                # group_standings.csv) from DataHub here
-python -m etl.loader --data-dir data                       # All tournaments
-python -m etl.loader --data-dir data --max-tournaments 5    # Quick test
-```
+Prefer to build from the DataHub CSVs instead of the snapshot? See
+[GETTING_STARTED.md](GETTING_STARTED.md) §4B. To query it (Claude / HTTP / CLI), see
+[docs/QUERYING.md](docs/QUERYING.md).
 
 ## Example Queries
 
@@ -108,10 +110,12 @@ See the full **[100-query showcase](docs/100-queries.md)** -- from single-table 
 ## MCP Server
 
 ```bash
-python -m mcp_server.server --max-tournaments 5          # embedded, quick test
-python -m mcp_server.server --url http://localhost:8080  # against a running Samyama server
-python -m mcp_server.server --list-tools                 # see all auto-generated + custom tools
+python -m mcp_server.server --max-tournaments 5                          # embedded, quick test
+python -m mcp_server.server --url http://localhost:8080 --graph football # against a running Samyama server
+python -m mcp_server.server --list-tools                                 # see all auto-generated + custom tools
 ```
+
+Register it with Claude and ask questions in natural language — see **[docs/QUERYING.md](docs/QUERYING.md)**.
 
 ## Links
 
