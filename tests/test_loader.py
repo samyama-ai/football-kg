@@ -159,7 +159,7 @@ def loaded_graph():
 
 
 def _q(client, cypher):
-    r = client.query_readonly(cypher, "default")
+    r = client.query_readonly(cypher, "football")
     return [dict(zip(r.columns, row)) for row in r.records]
 
 
