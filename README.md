@@ -6,6 +6,21 @@
 > This repo holds the loader and source-data specifics for the KG.
 
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache_2.0-blue" alt="License"></a>
+<a href="https://huggingface.co/datasets/VaidhyaMegha/football-kg"><img src="https://img.shields.io/badge/%F0%9F%A4%97%20dataset-VaidhyaMegha%2Ffootball--kg-yellow" alt="HuggingFace dataset"></a>
+
+**The built graph is published as a dataset** -- you do not have to run the ETL to get it:
+**[huggingface.co/datasets/VaidhyaMegha/football-kg](https://huggingface.co/datasets/VaidhyaMegha/football-kg)**
+(`v1.0`, PDDL). It ships the node and edge CSVs plus `football.sgsnap`. This repository holds
+the **code**; that dataset holds the **data**; the snapshot is the **graph**.
+
+```python
+from datasets import load_dataset
+players = load_dataset("VaidhyaMegha/football-kg", "player", revision="v1.0")
+```
+
+> That release is a **subset** of the schema below -- 16,150 nodes and 12,384 edges across
+> 8 node labels and 8 edge types, without Referee, Booking, Substitution, PenaltyKick or the
+> `PLAYED_FOR` squad edges. See the dataset card's Limitations section.
 
 ---
 
@@ -117,6 +132,7 @@ python -m mcp_server.server --list-tools                 # see all auto-generate
 
 | | |
 |---|---|
+| **Published dataset** | **[huggingface.co/datasets/VaidhyaMegha/football-kg](https://huggingface.co/datasets/VaidhyaMegha/football-kg)** |
 | Samyama Graph | [github.com/samyama-ai/samyama-graph](https://github.com/samyama-ai/samyama-graph) |
 | The Book | [samyama-ai.github.io/samyama-graph-book](https://samyama-ai.github.io/samyama-graph-book/) |
 | DataHub World Cup Datasets | [datahub.io/collections/football](https://datahub.io/collections/football) |
@@ -124,4 +140,8 @@ python -m mcp_server.server --list-tools                 # see all auto-generate
 
 ## License
 
-Apache 2.0. Data from DataHub World Cup Datasets is PDDL (Open Data Commons Public Domain Dedication and License).
+Apache 2.0 covers the **code** in this repository. The **data** is a separate matter: it comes
+from the DataHub World Cup Datasets under **PDDL** (Open Data Commons Public Domain Dedication
+and License), and PDDL -- not Apache 2.0 -- is what governs the
+[published dataset](https://huggingface.co/datasets/VaidhyaMegha/football-kg) and any
+redistribution of it.
